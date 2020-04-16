@@ -1,0 +1,289 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+<script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
+<style type="text/css">
+.year-con { overflow:hidden;margin-bottom:10px; }
+.bts {background:blue;color:white; float:left; padding:2px 5px 2px 5px;margin-right:10px;}
+.bts.active { background:green;}
+</style>
+<script>
+var totalMonth;
+var feedurl_start = "https://spreadsheets.google.com/feeds/";
+var yearKeys = { "2015": "1Oa8ETCjkmMNaLh8ao9GkHBrbcBrSPuOJatwN3WIc_rw", 
+				 "2016": "1Co6G5L_0_7_zRMEO8Zx9yYmFXbJtsrzbtoSOLMzmAHQ", 
+				 "2017": "11YDQVi25OxOHO_e6OSJt7ivpjBRhq3TeSg1knA1tElc",
+				 "2018": "189wr77clZgaF3ANFDfDhv0GbvWy4VQz5kOa4H5MvD3o",
+				 "2019": "1M2vpvrjXM4kW2nmeXgaL7JgLHRIjY4t8agu_10UfbdQ",
+				 "2020": "1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ" };
+
+var feedkey = "1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ";
+var lineData = [];
+var nos = 0;
+var basics = ["Fruits","Snacks","Milk","Grocery","Lunch","Medicines","Dinner","Breakfast","Dress","Vegetables","Banana","Hospital"];
+function loadYear(year) {
+		feedkey = yearKeys[year];
+		loadSheetData("");
+	}
+$(document).ready(function() {
+	loadYear("2020");
+	jQuery("#filterItems").append(new Option("All", ""));
+	basics.forEach(function(items) {
+		jQuery("#filterItems").append(new Option(items, items));
+	});
+	$('#filterItems').change(function() { 
+		lineData = [];
+		loadSheetData($(this).val());
+	});
+	
+	$('#sheetslist').change(function() {    
+		loadData($(this).val(),$(this).find("option:selected").text(),'pie','');
+	});
+});
+function loadSheetData(filter) {
+	console.log("Clicked yearkey:"+feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json");
+	$.getJSON(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json", function(sheetfeed) {
+	        nos = sheetfeed.feed.entry.length;
+			$.each(sheetfeed.feed.entry, function(k_sheet, v_sheet){
+				var sheeturl = v_sheet.link[0]["href"]+"?alt=json";
+				sheeturl = sheeturl.replace("basic", "values");
+				var sheet_title = v_sheet.content["$t"]; // to know which sheet you're dealing with
+				console.log(sheet_title);
+				$.getJSON(sheeturl, function(sheetjson){
+					if(filter=='') {
+						jQuery("#sheetslist").append(new Option(sheet_title, sheeturl));
+					}
+					loadData(sheeturl,sheet_title,'line',filter);
+					//lineData.push({ x : sheet_title, y : totalMonth });
+					
+				});
+			});
+	});
+}
+function loadLineData(dataUrl,monthName,type,filter) {
+	var finalData = {};
+	var lastData = [];
+	var lineData = [];
+	var totalExpense = 0;
+    $.ajax({
+        'async': true,
+        'global': false,
+        'dataType': 'json',
+        //'url': 'https://spreadsheets.google.com/feeds/list/1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ/od6/public/values?alt=json',
+		'url': dataUrl,
+        'success': function(data) {
+			data_sheet = extractSheetData(data.feed.entry);
+			var n;
+			var tmp = 0;
+			data_sheet.forEach(function(dataRow) {
+				purpose = dataRow.purpose;
+				purpose = purpose.replace(" ", "");
+				purpose = purpose.toLowerCase();
+				purposeC = purpose.charAt(0).toUpperCase()+purpose.slice(1);
+				n = basics.includes(purposeC);
+				if(filter != '') {
+					filter = purposeC;
+					if(finalData[purposeC] === undefined) {
+						finalData[purposeC] = parseInt(dataRow.amount);
+					} else {
+						tmp = parseInt(finalData[purposeC]);
+						tmp = tmp + parseInt(dataRow.amount);
+						finalData[purposeC] = tmp;
+					}
+				} else {
+					if(n) {
+						if(finalData[purposeC] === undefined) {
+							finalData[purposeC] = parseInt(dataRow.amount);
+						} else {
+							tmp = parseInt(finalData[purposeC]);
+							tmp = tmp + parseInt(dataRow.amount);
+							finalData[purposeC] = tmp;
+						}
+					} else {
+						if(finalData["Others"] === undefined) {
+							finalData["Others"] = parseInt(dataRow.amount);
+						} else {
+							tmp = parseInt(finalData["Others"]);
+							tmp = tmp + parseInt(dataRow.amount);
+							finalData["Others"] = tmp;
+						}
+					}
+				}
+				totalExpense = totalExpense + parseInt(dataRow.amount);;
+			});
+			if(type=='line') {
+				lineData.push({ x : "28 "+monthName, y : totalExpense });
+				if(lineData.length>=nos) {
+					//console.log("LINE DATA:"+lineData);
+					drawLineChart(lineData);
+				}
+			}
+			if(type=='pie') {
+				for (let [key, value] of Object.entries(finalData)) {
+				  lastData.push({ y : value, label : key });
+				}
+				drawPieChart(lastData,monthName);
+				jQuery('.totalExpense').html("Total Expense: "+totalExpense);
+			}
+        }
+    });
+}
+function loadData(dataUrl,monthName,type,filter) {
+	var finalData = {};
+	var lastData = [];
+	var totalExpense = 0;
+    $.ajax({
+        'async': false,
+        'global': false,
+        'dataType': 'json',
+        //'url': 'https://spreadsheets.google.com/feeds/list/1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ/od6/public/values?alt=json',
+		'url': dataUrl,
+        'success': function(data) {
+			data_sheet = extractSheetData(data.feed.entry);
+			var n;
+			var tmp = 0;
+			data_sheet.forEach(function(dataRow) {
+				purpose = dataRow.purpose;
+				purpose = purpose.replace(" ", "");
+				purpose = purpose.toLowerCase();
+				purposeC = purpose.charAt(0).toUpperCase()+purpose.slice(1);
+				n = basics.includes(purposeC);
+				if(filter != '' && purposeC == filter) { 
+					if(finalData[purposeC] === undefined) {
+						finalData[purposeC] = parseInt(dataRow.amount);
+					} else {
+						tmp = parseInt(finalData[purposeC]);
+						tmp = tmp + parseInt(dataRow.amount);
+						finalData[purposeC] = tmp;
+					}
+					totalExpense = totalExpense + parseInt(dataRow.amount);
+				} else if(filter=='') {
+					if(n) {
+						if(finalData[purposeC] === undefined) {
+							finalData[purposeC] = parseInt(dataRow.amount);
+						} else {
+							tmp = parseInt(finalData[purposeC]);
+							tmp = tmp + parseInt(dataRow.amount);
+							finalData[purposeC] = tmp;
+						}
+					} else {
+						if(finalData["Others"] === undefined) {
+							finalData["Others"] = parseInt(dataRow.amount);
+						} else {
+							tmp = parseInt(finalData["Others"]);
+							tmp = tmp + parseInt(dataRow.amount);
+							finalData["Others"] = tmp;
+						}
+					}
+					totalExpense = totalExpense + parseInt(dataRow.amount);;
+				}
+				
+			});
+			if(type=='line') {
+				lineData.push({ x : new Date("1 "+monthName), y : totalExpense});
+				if(lineData.length>=nos) {
+					 lineData.sort(function(a, b){ 
+		  
+						return new Date(a.x) - new Date(b.x); 
+					}); 
+					//console.log("LINE DATA:"+lineData);
+					drawLineChart(lineData);
+				}
+			}
+			if(type=='pie') {
+				for (let [key, value] of Object.entries(finalData)) {
+				  lastData.push({ y : value, label : key });
+				}
+				drawPieChart(lastData,monthName);
+				jQuery('.totalExpense').html("Total Expense: "+totalExpense);
+			}
+        }
+    });
+}
+
+function extractSheetData(entries) {
+  var data_row = [];
+  var i = 0;
+  entries.forEach(function(entry) {
+		data_row.push({ purpose : entry.gsx$purpose.$t,amount : entry.gsx$amount.$t });
+		i++;
+  });
+  return data_row;
+}
+
+function drawPieChart(lastData,monthName) {
+	console.log(lastData);
+	var chart = new CanvasJS.Chart("chartContainer", {
+		animationEnabled: true,
+		title: {
+			text: "Expense "+monthName
+		},
+		data: [{
+			type: "pie",
+			startAngle: 240,
+			//yValueFormatString: "##0.00\"%\"",
+			indexLabel: "{label} {y}",
+			dataPoints: lastData
+			//dataPoints: [{y:607,label: "Fruits"},{y:1143,label: "Dinner"},{y:3506,label: "Lunch"},{y:123,label: "Milk"},{y:858,label: "Vegetables"},{y:906,label: "Grocery"},{y:1155,label: "Snacks"},{y:3650,label: "Others"},{y:220,label: "Breakfast"}]
+			/*dataPoints: [
+				{y: 607.5, label: "Fruits"},
+				{y: 1143.5, label: "Dinner"},
+				{y: 3506.5, label: "Lunch"}
+			]*/
+			/*dataPoints: [
+				{y: 79.45, label: "Google"},
+				{y: 7.31, label: "Bing"},
+				{y: 7.06, label: "Baidu"},
+				{y: 4.91, label: "Yahoo"},
+				{y: 1.26, label: "Others"}
+			]*/
+		}]
+	});
+	chart.render();
+}
+function drawLineChart(lineData) {
+    //console.log(lineData);
+	var chart = new CanvasJS.Chart("totalContainer",
+		{
+
+		  title:{
+		  text: "Expenses"
+		  },
+		  axisX: {
+			valueFormatString: "MMM",
+			interval:1,
+			intervalType: "month"
+		  },
+		  axisY:{
+			includeZero: false
+		  },
+		  data: [
+		  {
+			type: "spline",
+			indexLabel: "{y}",
+			dataPoints: lineData
+		  }
+		  ]
+		});
+		chart.render();
+}
+</script>
+</head>
+<body>
+<div class="year-con">
+<button class="bts" onclick="loadYear('2015')">2015</button>
+<button class="bts" onclick="loadYear('2016')">2016</button>
+<button class="bts" onclick="loadYear('2017')">2017</button>
+<button class="bts" onclick="loadYear('2018')">2018</button>
+<button class="bts" onclick="loadYear('2019')">2019</button>
+<button class="bts active" onclick="loadYear('2020')">2020</button>
+</div>
+<label>Filter by Items</label>
+<select id="filterItems"></select>
+<div id="totalContainer" style="height: 300px; width: 100%;"></div>
+<select id="sheetslist"></select>
+<div id="chartContainer" style="height: 300px; width: 100%;"></div>
+<h3 class="totalExpense"></h3>
+<script src="https://canvasjs.com/assets/script/canvasjs.min.js"></script>
+</body>
+</html>
