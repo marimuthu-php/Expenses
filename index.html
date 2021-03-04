@@ -61,6 +61,7 @@ function loadSheetData(filter) {
     .find('option')
     .remove();
 	$.getJSON(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json", function(sheetfeed) {
+		console.log(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json");
 	        nos = sheetfeed.feed.entry.length;
 			$.each(sheetfeed.feed.entry, function(k_sheet, v_sheet){
 				var sheeturl = v_sheet.link[0]["href"]+"?alt=json";
