@@ -7,12 +7,7 @@
 <script src="https://code.jquery.com/jquery-1.12.4.min.js"></script>
 <style type="text/css">
 .year-con { overflow:hidden;margin-bottom:10px; }
-.bts {background: #535390;
-    color: white;
-    border: 1px solid;
-    float: left;
-    padding: 5px 10px 5px 10px;
-    margin-right: 10px;}
+.bts {background: #535390;color: white;border: 1px solid;float: left;padding: 5px 10px 5px 10px;margin-right: 10px;}
 .bts.active { background:green;}
 .totalExpense {text-align:center}
 </style>
@@ -20,14 +15,14 @@
 var totalMonth;
 var feedurl_start = "https://spreadsheets.google.com/feeds/";
 var yearKeys = { "2015": "1Oa8ETCjkmMNaLh8ao9GkHBrbcBrSPuOJatwN3WIc_rw", 
-				 "2016": "1Co6G5L_0_7_zRMEO8Zx9yYmFXbJtsrzbtoSOLMzmAHQ", 
-				 "2017": "11YDQVi25OxOHO_e6OSJt7ivpjBRhq3TeSg1knA1tElc",
-				 "2018": "189wr77clZgaF3ANFDfDhv0GbvWy4VQz5kOa4H5MvD3o",
-				 "2019": "1M2vpvrjXM4kW2nmeXgaL7JgLHRIjY4t8agu_10UfbdQ",
-				 "2020": "1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ",
-	       			 "2021": "1tqR0K93W0nf22WdYwFaHJ9vOFkXPZkod9oAt01QgVug"};
+		 "2016": "1Co6G5L_0_7_zRMEO8Zx9yYmFXbJtsrzbtoSOLMzmAHQ", 
+		 "2017": "11YDQVi25OxOHO_e6OSJt7ivpjBRhq3TeSg1knA1tElc",
+		 "2018": "189wr77clZgaF3ANFDfDhv0GbvWy4VQz5kOa4H5MvD3o",
+		 "2019": "1M2vpvrjXM4kW2nmeXgaL7JgLHRIjY4t8agu_10UfbdQ",
+		 "2020": "1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ",
+	       	 "2021": "1tqR0K93W0nf22WdYwFaHJ9vOFkXPZkod9oAt01QgVug"};
 
-var feedkey = "1d3Fn-HafNlnLPDPztJT6zwOSOjPOCbv5X-h4w_9c4IQ";
+var feedkey = "1tqR0K93W0nf22WdYwFaHJ9vOFkXPZkod9oAt01QgVug";
 var lineData = [];
 var finalData = {};
 var lastData = [];
@@ -50,7 +45,6 @@ $(document).ready(function() {
 		lineData = [];
 		loadSheetData($(this).val());
 	});
-	
 	$('#sheetslist').change(function() {    
 		loadData($(this).val(),$(this).find("option:selected").text(),'pie','');
 	});
