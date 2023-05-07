@@ -57,7 +57,7 @@ function loadSheetData(filter) {
 	$('#sheetslist')
     .find('option')
     .remove();
-	$.getJSON(feedurl_start+"/"+feedkey+"/values/Jan 2021/public/basic?alt=json&key="+appKey, function(sheetfeed) {
+	$.getJSON(feedurl_start+feedkey+"/values/Jan 2021/public/basic?alt=json&key="+appKey, function(sheetfeed) {
 		console.log(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json&key="+appKey);
 	        nos = sheetfeed.feed.entry.length;
 			$.each(sheetfeed.feed.entry, function(k_sheet, v_sheet){
