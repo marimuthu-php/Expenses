@@ -13,7 +13,8 @@
 </style>
 <script>
 var totalMonth;
-var feedurl_start = "https://spreadsheets.google.com/feeds/";
+//var feedurl_start = "https://spreadsheets.google.com/feeds/";
+var feedurl_start = "https://sheets.googleapis.com/v4/spreadsheets/";
 var yearKeys = { "2015": "1Oa8ETCjkmMNaLh8ao9GkHBrbcBrSPuOJatwN3WIc_rw", 
 		 "2016": "1Co6G5L_0_7_zRMEO8Zx9yYmFXbJtsrzbtoSOLMzmAHQ", 
 		 "2017": "11YDQVi25OxOHO_e6OSJt7ivpjBRhq3TeSg1knA1tElc",
@@ -28,6 +29,7 @@ var lineData = [];
 var finalData = {};
 var lastData = [];
 var nos = 0;
+var appKey = "AIzaSyBWmSifFKABgEM0kQdJgENfVeAJTSTqFgw";
 var basics = ["Rent","Fruits","Snacks","Milk","Grocery","Lunch","Medicines","Oil","Dinner","Entertainment","Breakfast","Dress","Vegetables","Banana","Hospital","Water","Homethings","Petrol","Transport","Healthy","Drinks","Bike","Mobile","Beauty","Rice","Gifts","Recharge","Chicken","Mutton","Egg","Mobile","Maavu","Services","Transfers","Gas","Electricity"];
 function loadYear(year) {
 		feedkey = yearKeys[year];
@@ -55,8 +57,8 @@ function loadSheetData(filter) {
 	$('#sheetslist')
     .find('option')
     .remove();
-	$.getJSON(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json", function(sheetfeed) {
-		console.log(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json");
+	$.getJSON(feedurl_start+"/"+feedkey+"/values/Jan 2021/public/basic?alt=json&key="+appKey, function(sheetfeed) {
+		console.log(feedurl_start+"worksheets/"+feedkey+"/public/basic?alt=json&key="+appKey);
 	        nos = sheetfeed.feed.entry.length;
 			$.each(sheetfeed.feed.entry, function(k_sheet, v_sheet){
 				var sheeturl = v_sheet.link[0]["href"]+"?alt=json";
