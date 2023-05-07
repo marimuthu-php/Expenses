@@ -28,11 +28,13 @@ var feedkey = "1gnkgE3U1sje4GLlb-oRjjr487UMnjn37MT2zElC2WG0";
 var lineData = [];
 var finalData = {};
 var lastData = [];
+var yearVal = '2021';
 var nos = 0;
 var appKey = "AIzaSyBWmSifFKABgEM0kQdJgENfVeAJTSTqFgw";
 var basics = ["Rent","Fruits","Snacks","Milk","Grocery","Lunch","Medicines","Oil","Dinner","Entertainment","Breakfast","Dress","Vegetables","Banana","Hospital","Water","Homethings","Petrol","Transport","Healthy","Drinks","Bike","Mobile","Beauty","Rice","Gifts","Recharge","Chicken","Mutton","Egg","Mobile","Maavu","Services","Transfers","Gas","Electricity"];
 function loadYear(year) {
 		feedkey = yearKeys[year];
+	        yearVal = year;
 		lineData = [];
 		console.log("---------------------------------");
 		nos = 0;
@@ -57,8 +59,8 @@ function loadSheetData(filter) {
 	$('#sheetslist')
     .find('option')
     .remove();
-	$.getJSON(feedurl_start+feedkey+"/values/Jan "+feedkey+"?alt=json&key="+appKey, function(sheetfeed) {
-		console.log(feedurl_start+"worksheets/"+feedkey+"?alt=json&key="+appKey);
+	$.getJSON(feedurl_start+feedkey+"/values/Jan "+yearVal+"?alt=json&key="+appKey, function(sheetfeed) {
+		console.log(feedurl_start+"worksheets/"+yearVal+"?alt=json&key="+appKey);
 	        nos = sheetfeed.feed.entry.length;
 			$.each(sheetfeed.feed.entry, function(k_sheet, v_sheet){
 				var sheeturl = v_sheet.link[0]["href"]+"?alt=json";
